@@ -1,34 +1,58 @@
 <!DOCTYPE html>
-<html lang="en-us">
+<html lang='en-us'>
 
 <head>
-    <meta charset="UTF-8">
+    <meta charset='UTF-8'>
     <title></title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!--<link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">-->
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <!--<link rel='stylesheet' type='text/css' href='stylesheets/normalize.css' media='screen'>-->
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
-    <!--<link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">-->
+    <!--<link rel='stylesheet' type='text/css' href='stylesheets/stylesheet.css' media='screen'>
+    <link rel='stylesheet' type='text/css' href='stylesheets/github-light.css' media='screen'>-->
 
 
-    <link href="css/d3_timeseries.css" rel="stylesheet" type="text/css"></link>
+    <link href='css/d3_timeseries.css' rel='stylesheet' type='text/css'></link>
+    <link href='css/simple_grid.css' rel='stylesheet' type='text/css'></link>
 
 </head>
 
 <body>
-    <h3>Response time (millis)</h3>
-    <div class="chartContainer">
-        <div class="chart" id="chart1"></div>
+    <div class='grid-container'>
+        <div class='row'>
+            <div class='col-3'>
+                <h3>Response time (millis)</h3>
+                <div class='chartContainer'>
+                    <div class='chart' id='chart1'></div>
+                </div>
+            </div>
+            <div class='col-3'>
+                <h3>Events</h3>
+                <div class='chartContainer'>
+                    <div class='chart' id='chart2'></div>
+                </div>
+            </div>
+        </div>
+
+        <div class='row'>
+            <div class='col-3'>
+                <h3>SM Posts (state: featurized)</h3>
+                <div class='chartContainer'>
+                    <div class='chart' id='chart3'></div>
+                </div>
+            </div>
+            <div class='col-3'>
+                <h3>Job Sets (state: new/waiting)</h3>
+                <div class='chartContainer'>
+                    <div class='chart' id='chart4'></div>
+                </div>
+            </div>
+        </div>
     </div>
 
-     <h3>Events</h3>
-    <div class="chartContainer">
-        <div class="chart" id="chart2"></div>
-    </div>
-
-    <script src="js/d3.min.js"></script>
-    <script src="js/d3_timeseries.js"></script>
-    <script src="js/app.js"></script>
+    <script src='js/d3.min.js'></script>
+    <script src='js/d3.tip.js'></script>
+    <script src='js/d3_timeseries.js'></script>
+    <script src='js/app.js'></script>
 </body>
 
 </html>

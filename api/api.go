@@ -13,9 +13,10 @@ import (
 )
 
 type Stats struct {
-	RespTime   int     `form:"resp_time" json:"resp_time"`
-	EventCount float64 `form:"event_count" json:"event_count"`
-	Created    int     `form:"created" json:"created"`
+	QueryType string  `form:"query_type" json:"query_type"`
+	RespTime  int     `form:"resp_time" json:"resp_time"`
+	Count     float64 `form:"count" json:"count"`
+	Created   int     `form:"created" json:"created"`
 }
 
 var db *mgo.Session
@@ -66,28 +67,35 @@ func main() {
 	})
 
 	router.GET("/api/watchman", func(c *gin.Context) {
-
 		results := []Stats{}
 
-		coll := db.DB("app_stats").C("events")
+		coll := db.DB("app_stats").C("app")
 		err := coll.Find(nil).Limit(3600).Sort("-created").All(&results)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		c.JSON(http.StatusOK, &results)
+	})
 
+	// allow get request for ease of use
+	router.GET("/api/watchman/drop", func(c *gin.Context) {
+		coll := db.DB("app_stats").C("app")
+		err := coll.DropCollection()
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
 
 	router.Run()
 }
 
 func saveToDb(stats Stats) {
-
-	coll := db.DB("app_stats").C("events")
+	coll := db.DB("app_stats").C("app")
 	err := coll.Insert(stats)
 	if err != nil {
 		log.Fatal(err)
 	}
-
 }

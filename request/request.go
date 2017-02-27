@@ -4,37 +4,60 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
-	"os"
 	"time"
+
+	"github.com/BurntSushi/toml"
 )
 
-func main() {
-	url := os.Getenv("PING_URL")
-	if url == "" {
-		url = "http://localhost:3000/api/events/count"
-	}
+type Endpoint []string
 
-	ticker := time.NewTicker(time.Second * 2)
+type Conf struct {
+	Endpoints []Endpoint
+	API       string
+}
+
+type QueryResult struct {
+	Count     float64
+	Duration  time.Duration
+	QueryType string
+}
+
+var conf Conf
+
+func getConf() {
+	if _, err := toml.DecodeFile("conf.toml", &conf); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func main() {
+	ticker := time.NewTicker(time.Second * 5)
 	go func() {
 		for t := range ticker.C {
-			makeRequest(url)
+			// re-read on each loop
+			getConf()
+			for _, ep := range conf.Endpoints {
+				makeRequest(ep)
+			}
 			fmt.Println(t)
 		}
 	}()
 
-	time.Sleep(time.Hour * 999999) // run for long time
+	time.Sleep(time.Hour * 999999)
 	ticker.Stop()
 	fmt.Println("Ticker stopped")
 }
 
-func makeRequest(url string) {
+func makeRequest(ep Endpoint) {
+	qres := QueryResult{QueryType: ep[0]}
+
 	start := time.Now()
 
-	res, err := http.Get(url)
+	res, err := http.Get(ep[1])
 
 	defer func() {
-		// res.Close = true
 		res.Body.Close()
 	}()
 
@@ -43,49 +66,38 @@ func makeRequest(url string) {
 		return
 	}
 
-	// fmt.Println(res)
-
-	dur := time.Since(start)
+	qres.Duration = time.Since(start)
 
 	data := map[string]interface{}{}
 
 	json.NewDecoder(res.Body).Decode(&data)
 
-	// fmt.Println(data)
-
+	fmt.Println(data)
+	
 	count, ok := data["count"].(float64)
 	if !ok {
 		fmt.Printf("unexpected count type: %T\n", data["count"])
 	}
-	saveResults(dur, count)
-
+	qres.Count = count
+	saveResult(qres)
 }
 
-func saveResults(dur time.Duration, count float64) {
-	apiURL := os.Getenv("API_URL")
-	if apiURL == "" {
-		apiURL = "http://localhost:8080/api/watchman"
-	}
-
+func saveResult(qres QueryResult) {
 	results := map[string]interface{}{
-		"event_count": count,
-		"resp_time":   dur.Nanoseconds() / 1000000, //ms
-		"created":     time.Now().UnixNano() / 1000000,
+		"query_type": qres.QueryType,
+		"count":      qres.Count,
+		"resp_time":  qres.Duration / 1000000, //ms
+		"created":    time.Now().UnixNano() / 1000000,
 	}
 
 	data, err := json.Marshal(results)
 
-	res, err := http.Post(apiURL, "application/json", bytes.NewBuffer(data))
+	res, err := http.Post(conf.API, "application/json", bytes.NewBuffer(data))
 
-	defer func() {
-		// res.Close = true
-		res.Body.Close()
-	}()
+	defer res.Body.Close()
 
 	if err != nil {
 		fmt.Println("err", err)
 		return
 	}
-
-	// fmt.Println(res)
 }
