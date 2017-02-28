@@ -12,10 +12,11 @@ function load() {
 load()
 
 function createCharts(data) {
-    renderChart(data.filter(d => d.query_type === 'event'), '#chart1', 'resp_time')
-    renderChart(data.filter(d => d.query_type === 'event'), '#chart2', 'count')
-    renderChart(data.filter(d => d.query_type === 'post'), '#chart3', 'count')
+    renderChart(data.filter(d => d.query_type === 'post'), '#chart1', 'count')
+    renderChart(data.filter(d => d.query_type === 'post:featurized'), '#chart2', 'count')
+    renderChart(data.filter(d => d.query_type === 'event'), '#chart3', 'count')
     renderChart(data.filter(d => d.query_type === 'jobset'), '#chart4', 'count')
+    renderChart(data.filter(d => d.query_type === 'event'), '#chart5', 'resp_time')
 }
 
 function renderChart(data, chartSel, ofX) {
