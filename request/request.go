@@ -33,21 +33,20 @@ func readConf() {
 }
 
 func main() {
-	ticker := time.NewTicker(time.Second * 5)
-	go func() {
-		for t := range ticker.C {
-			// re-read on each loop
-			readConf()
-			for _, ep := range conf.Endpoints {
-				makeRequest(ep)
-			}
-			fmt.Println(t)
+	readConf()
+	if len(conf.Endpoints) == 0 {
+		log.Fatal("missing conf")
+	}
+	for {
+		// re-read on each loop
+		readConf()
+		for _, ep := range conf.Endpoints {
+			fmt.Println("requesting", ep[1])
+			makeRequest(ep)
 		}
-	}()
+		time.Sleep(5 * time.Second)
+	}
 
-	time.Sleep(time.Hour * 999999)
-	ticker.Stop()
-	fmt.Println("Ticker stopped")
 }
 
 func makeRequest(ep Endpoint) {
@@ -96,6 +95,6 @@ func saveResult(qres QueryResult) {
 		fmt.Println("err", err)
 		return
 	}
-	
+
 	defer res.Body.Close()
 }
