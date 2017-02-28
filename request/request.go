@@ -26,7 +26,7 @@ type QueryResult struct {
 
 var conf Conf
 
-func getConf() {
+func readConf() {
 	if _, err := toml.DecodeFile("conf.toml", &conf); err != nil {
 		log.Fatal(err)
 	}
@@ -37,7 +37,7 @@ func main() {
 	go func() {
 		for t := range ticker.C {
 			// re-read on each loop
-			getConf()
+			readConf()
 			for _, ep := range conf.Endpoints {
 				makeRequest(ep)
 			}
@@ -57,14 +57,12 @@ func makeRequest(ep Endpoint) {
 
 	res, err := http.Get(ep[1])
 
-	defer func() {
-		res.Body.Close()
-	}()
-
 	if err != nil {
 		fmt.Println("err", err)
 		return
 	}
+
+	defer res.Body.Close()
 
 	qres.Duration = time.Since(start)
 
@@ -73,7 +71,7 @@ func makeRequest(ep Endpoint) {
 	json.NewDecoder(res.Body).Decode(&data)
 
 	fmt.Println(data)
-	
+
 	count, ok := data["count"].(float64)
 	if !ok {
 		fmt.Printf("unexpected count type: %T\n", data["count"])
@@ -94,10 +92,10 @@ func saveResult(qres QueryResult) {
 
 	res, err := http.Post(conf.API, "application/json", bytes.NewBuffer(data))
 
-	defer res.Body.Close()
-
 	if err != nil {
 		fmt.Println("err", err)
 		return
 	}
+	
+	defer res.Body.Close()
 }
