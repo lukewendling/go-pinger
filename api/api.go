@@ -44,10 +44,10 @@ func main() {
 	router.LoadHTMLFiles("../app/index.tmpl")
 
 	router.GET("/", func(c *gin.Context) {
-		c.Redirect(http.StatusMovedPermanently, "/app")
+		c.Redirect(http.StatusMovedPermanently, "/dash")
 	})
 
-	router.GET("/app", func(c *gin.Context) {
+	router.GET("/dash", func(c *gin.Context) {
         c.HTML(http.StatusOK, "index.tmpl", gin.H{
             "cache_bust": time.Now().Nanosecond() / 1000000,
         })
