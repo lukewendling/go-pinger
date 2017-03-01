@@ -16,6 +16,6 @@ cp conf.toml.example conf.toml
 git clone ...
 cd go-pinger
 # create docker-compose.override.yml if needed
-# create ./request/conf.yml
+# create ./request/conf.toml
 docker-compose up -d
 ```
