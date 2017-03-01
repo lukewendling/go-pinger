@@ -9,8 +9,10 @@ import (
 	mgo "gopkg.in/mgo.v2"
 	_ "gopkg.in/mgo.v2/bson"
 
-	"gopkg.in/gin-gonic/gin.v1"
+	"path/filepath"
 	"time"
+
+	"gopkg.in/gin-gonic/gin.v1"
 )
 
 type Stats struct {
@@ -41,17 +43,22 @@ func main() {
 
 	router := gin.Default()
 
-	router.LoadHTMLFiles("../app/index.tmpl")
+	fp, err := filepath.Abs("../app/index.tmpl")
+	if err != nil {
+		panic(err)
+	}
+	
+	router.LoadHTMLFiles(fp)
 
 	router.GET("/", func(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, "/dash")
 	})
 
 	router.GET("/dash", func(c *gin.Context) {
-        c.HTML(http.StatusOK, "index.tmpl", gin.H{
-            "cache_bust": time.Now().Nanosecond() / 1000000,
-        })
-    })
+		c.HTML(http.StatusOK, "index.tmpl", gin.H{
+			"cache_bust": time.Now().Nanosecond() / 1000000,
+		})
+	})
 
 	router.Static("/app", "../app")
 	router.StaticFile("/favicon.ico", "../app/favicon.ico")
