@@ -13,6 +13,7 @@ cp conf.toml.example conf.toml
 ### Deploy
 
 ```
+# Make sure you've built the binaries and committed
 git clone ...
 cd go-pinger
 # create docker-compose.override.yml if needed
