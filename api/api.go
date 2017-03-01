@@ -84,9 +84,9 @@ func main() {
 	})
 
 	r.GET("/dash", func(c *gin.Context) {
-		ts := 0
+		var ts int64
 		if m := os.Getenv("GIN_MODE"); m == "release" {
-			ts = time.Now().Nanosecond() / 1000
+			ts = time.Now().Unix()
 		}
 		c.HTML(http.StatusOK, "index.tmpl", gin.H{
 			"cache_bust": ts,
