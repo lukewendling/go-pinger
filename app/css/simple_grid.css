@@ -9,11 +9,11 @@
     box-sizing: border-box; 
 }
 
-/*-- cleafix hack -- */ 
+/*-- clearfix hack -- */ 
 .row:before, 
 .row:after {
     content: "";
-    display: table ;
+    display: table;
     clear: both;
 }
 
