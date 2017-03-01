@@ -15,6 +15,7 @@ import (
 	"gopkg.in/gin-gonic/gin.v1"
 )
 
+// Stats are various metrics
 type Stats struct {
 	QueryType string  `form:"query_type" json:"query_type"`
 	RespTime  int     `form:"resp_time" json:"resp_time"`
