@@ -42,70 +42,75 @@ func main() {
 	// Optional. Switch the session to a monotonic behavior.
 	// dbSession.SetMode(mgo.Monotonic, true)
 
-	router := gin.Default()
+	r := gin.Default()
 
 	indexTmpl, err := filepath.Abs("../app/index.tmpl")
 	if err != nil {
 		panic(err)
 	}
 
-	router.LoadHTMLFiles(indexTmpl)
+	r.LoadHTMLFiles(indexTmpl)
 
-	router.GET("/", func(c *gin.Context) {
+	r.GET("/", func(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, "/dash")
 	})
 
-	router.GET("/dash", func(c *gin.Context) {
+	r.GET("/dash", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.tmpl", gin.H{
 			"cache_bust": time.Now().Nanosecond() / 1000000,
 		})
 	})
 
-	router.Static("/app", "../app")
-	router.StaticFile("/favicon.ico", "../app/favicon.ico")
+	r.Static("/app", "../app")
+	r.StaticFile("/favicon.ico", "../app/favicon.ico")
 
-	router.GET("/test/:name", func(c *gin.Context) {
-		name := c.Param("name")
-		c.String(http.StatusOK, "Hello %s", name)
-	})
+	test := r.Group("/test")
+	{
+		test.GET("/ping/:v", func(c *gin.Context) {
+			v := c.Param("v")
+			c.String(http.StatusOK, "%s", v)
+		})
+	}
 
-	router.POST("/api/watchman", func(c *gin.Context) {
-		var json Stats
-		if err := c.BindJSON(&json); err == nil {
-			fmt.Printf("%+v\n", json)
+	api := r.Group("/api")
+	{
+		api.POST("/watchman", func(c *gin.Context) {
+			var json Stats
+			if err := c.BindJSON(&json); err == nil {
+				fmt.Printf("%+v\n", json)
 
-			saveToDb(json)
+				saveToDb(json)
+				c.JSON(http.StatusOK, gin.H{"status": "ok"})
+			} else {
+				fmt.Println(err)
+			}
+		})
+
+		api.GET("/watchman", func(c *gin.Context) {
+			results := []Stats{}
+
+			coll := db.DB("app_stats").C("app")
+			err := coll.Find(nil).Limit(3600).Sort("-created").All(&results)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			c.JSON(http.StatusOK, &results)
+		})
+
+		// allow get request for ease of use
+		api.GET("/watchman/drop", func(c *gin.Context) {
+			coll := db.DB("app_stats").C("app")
+			err := coll.DropCollection()
+			if err != nil {
+				fmt.Println(err)
+			}
+
 			c.JSON(http.StatusOK, gin.H{"status": "ok"})
-		} else {
-			fmt.Println(err)
+		})
+	}
 
-		}
-	})
-
-	router.GET("/api/watchman", func(c *gin.Context) {
-		results := []Stats{}
-
-		coll := db.DB("app_stats").C("app")
-		err := coll.Find(nil).Limit(3600).Sort("-created").All(&results)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		c.JSON(http.StatusOK, &results)
-	})
-
-	// allow get request for ease of use
-	router.GET("/api/watchman/drop", func(c *gin.Context) {
-		coll := db.DB("app_stats").C("app")
-		err := coll.DropCollection()
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		c.JSON(http.StatusOK, gin.H{"status": "ok"})
-	})
-
-	err = router.Run()
+	err = r.Run()
 	if err != nil {
 		log.Fatal(err)
 	}
