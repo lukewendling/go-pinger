@@ -6,6 +6,8 @@ services:
     environment: 
       - DB_HOST=172.17.0.1
       - PORT=3004
+    ports:
+      - "3004:3004"
     volumes:
       - ./supervisord.conf:/etc/supervisor/conf.d/supervisord.conf
       - .:/app
