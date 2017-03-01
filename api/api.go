@@ -44,12 +44,12 @@ func main() {
 
 	router := gin.Default()
 
-	fp, err := filepath.Abs("../app/index.tmpl")
+	indexTmpl, err := filepath.Abs("../app/index.tmpl")
 	if err != nil {
 		panic(err)
 	}
 
-	router.LoadHTMLFiles(fp)
+	router.LoadHTMLFiles(indexTmpl)
 
 	router.GET("/", func(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, "/dash")

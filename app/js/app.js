@@ -28,7 +28,7 @@ function renderChart(data, chartSel, ofX) {
         { interpolate: 'linear', width: 3 }
         )
         .addHandlers([{ name: 'brush', cb: throttle(cancelReload, 1500) }])
-        .yscale.domain([0]) // show 0 on y axis
+        // .yscale.domain([0]) // show 0 on y axis
         .margin.left(65)
         .width(650)
 
