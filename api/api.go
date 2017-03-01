@@ -9,7 +9,8 @@ import (
 	mgo "gopkg.in/mgo.v2"
 	_ "gopkg.in/mgo.v2/bson"
 
-	"github.com/gin-gonic/gin"
+	"gopkg.in/gin-gonic/gin.v1"
+	"time"
 )
 
 type Stats struct {
@@ -40,13 +41,20 @@ func main() {
 
 	router := gin.Default()
 
-	router.Static("/app", "../app")
-	// router.StaticFS("/more_static", http.Dir("my_file_system"))
-	// router.StaticFile("/favicon.ico", "./resources/favicon.ico")
+	router.LoadHTMLFiles("../app/index.tmpl")
 
 	router.GET("/", func(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, "/app")
 	})
+
+	router.GET("/app", func(c *gin.Context) {
+        c.HTML(http.StatusOK, "index.tmpl", gin.H{
+            "cache_bust": time.Now().Nanosecond() / 1000000,
+        })
+    })
+
+	router.Static("/app", "../app")
+	router.StaticFile("/favicon.ico", "../app/favicon.ico")
 
 	router.GET("/test/:name", func(c *gin.Context) {
 		name := c.Param("name")
