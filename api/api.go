@@ -5,12 +5,15 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"regexp"
 
 	mgo "gopkg.in/mgo.v2"
 	_ "gopkg.in/mgo.v2/bson"
 
 	"path/filepath"
 	"time"
+
+	"strings"
 
 	"gopkg.in/gin-gonic/gin.v1"
 )
@@ -24,6 +27,31 @@ type Stats struct {
 }
 
 var db *mgo.Session
+
+// match cache-busting names with local filenames
+func cacheBustHandler(c *gin.Context) {
+	// match route like /app/(js|css)/script.123456.(js|css)
+	compiled, err := regexp.Compile(`(?i)([a-z0-9_-]+)\.\d+\.([a-z]+)`)
+	if err != nil {
+		fmt.Println(err)
+		return // ok to return here?
+	}
+	param := c.Param("filename")
+	if match := compiled.FindStringSubmatch(param); match != nil {
+		// rm cache bust from param
+		f := strings.Join([]string{match[1], match[2]}, ".")
+		// create relative path
+		p := filepath.Join("../app", match[2], f)
+		fp, err := filepath.Abs(p)
+		if err != nil {
+			panic(err)
+		}
+		c.File(fp)
+	} else {
+		// not sure if this is correct way to continue route matching
+		c.Abort()
+	}
+}
 
 func main() {
 	var err error
@@ -56,12 +84,20 @@ func main() {
 	})
 
 	r.GET("/dash", func(c *gin.Context) {
+		ts := 0
+		if m := os.Getenv("GIN_MODE"); m == "release" {
+			ts = time.Now().Nanosecond() / 1000000
+		}
 		c.HTML(http.StatusOK, "index.tmpl", gin.H{
-			"cache_bust": time.Now().Nanosecond() / 1000000,
+			"cache_bust": ts,
 		})
 	})
 
-	r.Static("/app", "../app")
+	r.GET("/app/js/:filename", cacheBustHandler)
+	r.GET("/app/css/:filename", cacheBustHandler)
+
+	// non-vendored assets go thru cachebust handler
+	r.Static("/app/vendor", "../app/vendor")
 	r.StaticFile("/favicon.ico", "../app/favicon.ico")
 
 	test := r.Group("/test")
