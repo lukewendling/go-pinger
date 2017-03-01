@@ -47,7 +47,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	
+
 	router.LoadHTMLFiles(fp)
 
 	router.GET("/", func(c *gin.Context) {
@@ -104,7 +104,10 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
 
-	router.Run()
+	err = router.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func saveToDb(stats Stats) {
