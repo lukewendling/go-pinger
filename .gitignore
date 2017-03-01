@@ -3,3 +3,4 @@ debug
 tmp
 *.log
 *.toml
+*override.yml

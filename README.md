@@ -9,3 +9,13 @@ cd request
 cp conf.toml.example conf.toml
 ./request
 ```
+
+### Deploy
+
+```
+git clone ...
+cd go-pinger
+# create docker-compose.override.yml if needed
+# create ./request/conf.yml
+docker-compose up -d
+```
