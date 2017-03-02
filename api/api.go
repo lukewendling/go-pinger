@@ -126,7 +126,7 @@ func main() {
 			results := []Stats{}
 
 			coll := db.DB("app_stats").C("app")
-			err := coll.Find(nil).Limit(20000).Sort("-created").All(&results)
+			err := coll.Find(nil).Limit(60000).Sort("-created").All(&results)
 			if err != nil {
 				log.Fatal(err)
 			}
